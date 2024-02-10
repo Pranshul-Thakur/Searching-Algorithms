@@ -2,4 +2,8 @@
 
 Collection of most of the searching algorithms in python (in progress)
 
-- Binary Search
+- Iterative Binary Search
+
+- Recursive Binary Search
+
+- Linear Search
