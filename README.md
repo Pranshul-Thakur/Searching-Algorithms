@@ -7,3 +7,5 @@ Collection of most of the searching algorithms in python (in progress)
 - Recursive Binary Search
 
 - Linear Search
+
+- AVL Search
