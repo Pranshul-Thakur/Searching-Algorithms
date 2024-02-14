@@ -1,252 +1,107 @@
-# Python program for the above approach
+class Node:
+    def __init__(self, key):
+        self.key = key
+        self.height = 1
+        self.left = None
+        self.right = None
 
-# AVL tree node
-class AVLwithparent:
-	def __init__(self, key, parent=None):
-		self.left = None
-		self.right = None
-		self.key = key
-		self.par = parent
-		self.height = 1
 
-# Function to update the height of
-# a node according to its children's
-# node's heights
-def update_height(root):
-	if root is not None:
+class AVLTree:
+    def __init__(self):
+        self.root = None
 
-		# Store the height of the
-		# current node
-		val = 1
+    def height(self, node):
+        if not node:
+            return 0
+        return node.height
 
-		# Store the height of the left
-		# and the right subtree
-		if root.left is not None:
-			val = root.left.height + 1
+    def update_height(self, node):
+        if not node:
+            return 0
+        node.height = 1 + max(self.height(node.left), self.height(node.right))
 
-		if root.right is not None:
-			val = max(val, root.right.height + 1)
+    def balance_factor(self, node):
+        if not node:
+            return 0
+        return self.height(node.left) - self.height(node.right)
 
-		# Update the height of the
-		# current node
-		root.height = val
+    def left_rotate(self, z):
+        y = z.right
+        T2 = y.left
 
-# Function to handle Left Left Case
-def llr(root):
-	# Create a reference to the
-	# left child
-	tmp_node = root.left
+        y.left = z
+        z.right = T2
 
-	# Update the left child of the
-	# root to the right child of the
-	# current left child of the root
-	root.left = tmp_node.right
+        self.update_height(z)
+        self.update_height(y)
 
-	# Update parent pointer of the left
-	# child of the root node
-	if tmp_node.right is not None:
-		tmp_node.right.par = root
+        return y
 
-	# Update the right child of
-	# tmp_node to root
-	tmp_node.right = root
+    def right_rotate(self, y):
+        x = y.left
+        T2 = x.right
 
-	# Update parent pointer of tmp_node
-	tmp_node.par = root.par
+        x.right = y
+        y.left = T2
 
-	# Update the parent pointer of root
-	root.par = tmp_node
+        self.update_height(y)
+        self.update_height(x)
 
-	# Update tmp_node as the left or
-	# the right child of its parent
-	# pointer according to its key value
-	if tmp_node.par is not None and root.key < tmp_node.par.key:
-		tmp_node.par.left = tmp_node
-	else:
-		if tmp_node.par is not None:
-			tmp_node.par.right = tmp_node
+        return x
 
-	# Make tmp_node as the new root
-	root = tmp_node
+    def insert(self, root, key):
+        if not root:
+            return Node(key)
 
-	# Update the heights
-	update_height(root.left)
-	update_height(root.right)
-	update_height(root)
-	update_height(root.par)
+        if key < root.key:
+            root.left = self.insert(root.left, key)
+        else:
+            root.right = self.insert(root.right, key)
 
-	# Return the root node
-	return root
+        self.update_height(root)
 
-# Function to handle Right Right Case
-def rrr(root):
-	# Create a reference to the
-	# right child
-	tmp_node = root.right
+        balance = self.balance_factor(root)
 
-	# Update the right child of the
-	# root as the left child of the
-	# current right child of the root
-	root.right = tmp_node.left
+        if balance > 1:
+            if key < root.left.key:
+                return self.right_rotate(root)
+            else:
+                root.left = self.left_rotate(root.left)
+                return self.right_rotate(root)
 
-	# Update parent pointer of the right
-	# child of the root node
-	if tmp_node.left is not None:
-		tmp_node.left.par = root
+        if balance < -1:
+            if key > root.right.key:
+                return self.left_rotate(root)
+            else:
+                root.right = self.right_rotate(root.right)
+                return self.left_rotate(root)
 
-	# Update the left child of the
-	# tmp_node to root
-	tmp_node.left = root
+        return root
 
-	# Update parent pointer of tmp_node
-	tmp_node.par = root.par
+    def search(self, root, key):
+        if not root or root.key == key:
+            return root
 
-	# Update the parent pointer of root
-	root.par = tmp_node
+        if key < root.key:
+            return self.search(root.left, key)
+        elif key > root.key:
+            return self.search(root.right, key)
 
-	# Update tmp_node as the left or
-	# the right child of its parent
-	# pointer according to its key value
-	if tmp_node.par is not None and root.key < tmp_node.par.key:
-		tmp_node.par.left = tmp_node
-	else:
-		if tmp_node.par is not None:
-			tmp_node.par.right = tmp_node
+    def AVL_search(self, key):
+        return self.search(self.root, key)
 
-	# Make tmp_node as the new root
-	root = tmp_node
 
-	# Update the heights
-	update_height(root.left)
-	update_height(root.right)
-	update_height(root)
-	update_height(root.par)
+# Example usage:
+avl_tree = AVLTree()
+keys = [9, 5, 10, 0, 6, 11, -1, 1, 2]
 
-	# Return the root node
-	return root
+for key in keys:
+    avl_tree.root = avl_tree.insert(avl_tree.root, key)
 
-# Function to handle Left Right Case
-def lrr(root):
-	root.left = rrr(root.left)
-	return llr(root)
+search_key = 10
+result = avl_tree.AVL_search(search_key)
 
-# Function to handle Right Left Case
-def rlr(root):
-	root.right = llr(root.right)
-	return rrr(root)
-
-# Function to insert a node in
-# the AVL tree
-def insert(root, parent, key):
-	if root is None:
-
-		# Create and assign values
-		# to a new node
-		root = AVLwithparent(key, parent)
-
-	else:
-		if root.key > key:
-
-			# Recur to the left subtree
-			# to insert the node
-			root.left = insert(root.left, root, key)
-
-			# Stores the heights of the
-			# left and right subtree
-			first_height = 0
-			second_height = 0
-
-			if root.left is not None:
-				first_height = root.left.height
-
-			if root.right is not None:
-				second_height = root.right.height
-
-			# Balance the tree if the
-			# current node is not balanced
-			if abs(first_height - second_height) == 2:
-
-				if root.left is not None and key < root.left.key:
-
-					# Left Left Case
-					root = llr(root)
-				else:
-
-					# Left Right Case
-					root = lrr(root)
-
-		elif root.key < key:
-
-			# Recur to the right subtree
-			# to insert the node
-			root.right = insert(root.right, root, key)
-
-			# Store the heights of the left
-			# and right subtree
-			first_height = 0
-			second_height = 0
-
-			if root.left is not None:
-				first_height = root.left.height
-
-			if root.right is not None:
-				second_height = root.right.height
-
-			# Balance the tree if the
-			# current node is not balanced
-			if abs(first_height - second_height) == 2:
-				if root.right is not None and key < root.right.key:
-
-					# Right Left Case
-					root = rlr(root)
-				else:
-
-					# Right Right Case
-					root = rrr(root)
-
-	# Update the height of the
-	# root node
-	update_height(root)
-
-	# Return the root node
-	return root
-
-# Function to find a key in AVL tree
-def avl_search(root, key):
-	# If root is None
-	if root is None:
-		return False
-
-	# If found, return True
-	elif root.key == key:
-		return True
-
-	# Recur to the left subtree if
-	# the current node's value is
-	# greater than key
-	elif root.key > key:
-		return avl_search(root.left, key)
-
-	# Otherwise, recur to the
-	# right subtree
-	else:
-		return avl_search(root.right, key)
-
-# Driver Code
-if __name__ == "__main__":
-	root = None
-
-	# Function call to insert the nodes
-	root = insert(root, None, 10)
-	root = insert(root, None, 20)
-	root = insert(root, None, 30)
-	root = insert(root, None, 40)
-	root = insert(root, None, 50)
-	root = insert(root, None, 25)
-
-	# Function call to search for a node
-	found = avl_search(root, 40)
-	if found:
-		print("Value found")
-	else:
-		print("Value not found")
+if result:
+    print(f"Key {search_key} found in the AVL tree.")
+else:
+    print(f"Key {search_key} not found in the AVL tree.")
